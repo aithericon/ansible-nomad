@@ -2,4 +2,5 @@
 # File: main.yml handlers file for nomad
 
 - name: restart nomad
+  tags: configuration
   service: name=nomad state=restarted

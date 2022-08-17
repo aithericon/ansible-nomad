@@ -209,6 +209,7 @@
   tags: skip_ansible_lint, configuration
 
 - block:
+  tags: configuration, installation
     - name: systemd script
       template:
         src: "{{ nomad_systemd_template }}"

@@ -2,9 +2,11 @@
 # File: asserts.yml - Asserts for this playbook
 
 - name: ping hosts
+  tags: installation
   ping:
 
 - name: ensure all hosts are reachable
+  tags: installation
   run_once: yes
   assert:
     that:
@@ -12,6 +14,7 @@
   when: not nomad_skip_ensure_all_hosts | bool
 
 - name: os_supported_matrix | check distribution
+  tags: installation
   assert:
     quiet: yes
     fail_msg: "{{ ansible_distribution }} is not supported for this role"
@@ -19,6 +22,7 @@
       - ansible_distribution in os_supported_matrix
 
 - name: get os version to compare with
+  tags: installation
   set_fact:
     version_to_compare: "{{ item.value.min_version }}"
   loop: "{{ lookup('dict', os_supported_matrix) }}"
@@ -27,6 +31,7 @@
     - ansible_distribution in item.key
 
 - name: os_supported_matrix | check distribution version
+  tags: installation
   assert:
     quiet: yes
     fail_msg: "{{ ansible_distribution_version }} is not supported for this role"
@@ -37,6 +42,7 @@
     - version_to_compare | length > 0
 
 - name: Check nomad_group_name is included in groups
+  tags: configuration
   fail:
     msg: "nomad_group_name must be included in groups."
   when: nomad_group_name not in groups

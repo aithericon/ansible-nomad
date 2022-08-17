@@ -5,6 +5,7 @@
   include: asserts.yml
 
 - name: Include OS variables
+  tags: installation
   include_vars: "{{ ansible_os_family }}.yml"
 
 # Gathers facts (bind address) from servers not currently targeted.
@@ -25,20 +26,25 @@
     nomad_node_role: "{{ nomad_node_role }}"
 
 - name: Include user and group settings
+  tags: installation
   include: user_group.yml
 
 - name: Include Docker tasks
+  tags: installation
   include: docker.yml
   when: nomad_docker_enable | bool
 
 - name: Install OS packages
+  tags: installation
   include: install.yml
 
 - name: Disable SELinux (RHEL)
+  tags: installation
   include: selinux.yml
   when: ansible_os_family == "RedHat"
 
 - name: Create directories
+  tags: installation
   file:
     dest: "{{ item }}"
     state: directory
@@ -49,14 +55,17 @@
     - "{{ nomad_plugin_dir }}"
 
 - name: Install Podman plugin
+  tags: installation
   include: install_podman.yml
   when: nomad_podman_enable | bool
 
 - name: Install CNI plugin
+  tags: installation
   include: cni.yml
   when: nomad_cni_enable | bool
 
 - name: Create config directory
+  tags: installation
   file:
     dest: "{{ nomad_config_dir }}"
     state: directory
@@ -65,6 +74,7 @@
     mode: 0755
 
 - name: Base configuration
+  tags: configuration
   template:
     src: base.hcl.j2
     dest: "{{ nomad_config_dir }}/base.hcl"
@@ -75,6 +85,7 @@
     - restart nomad
 
 - name: Get Gossip Key
+  tags: configuration
   include_tasks: get_gossip_key.yml
   when:
     - _nomad_node_server | bool
@@ -82,10 +93,12 @@
     - nomad_encrypt is not defined
 
 - name: Create TLS configuration
+  tags: configuration
   include_tasks: tls.yml
   when: nomad_tls_enable | bool
 
 - name: Server configuration
+  tags: configuration
   template:
     src: server.hcl.j2
     dest: "{{ nomad_config_dir }}/server.hcl"
@@ -98,6 +111,7 @@
     - restart nomad
 
 - name: Remove Server configuration
+  tags: configuration
   file:
     dest: "{{ nomad_config_dir }}/server.hcl"
     state: absent
@@ -108,6 +122,7 @@
     - restart nomad
 
 - name: Client configuration
+  tags: configuration
   template:
     src: client.hcl.j2
     dest: "{{ nomad_config_dir }}/client.hcl"
@@ -120,6 +135,7 @@
     - restart nomad
 
 - name: Remove Client configuration
+  tags: configuration
   file:
     dest: "{{ nomad_config_dir }}/client.hcl"
     state: absent
@@ -130,6 +146,7 @@
     - restart nomad
 
 - name: Custom configuration
+  tags: configuration
   template:
     src: custom.json.j2
     dest: "{{ nomad_config_dir }}/custom.json"
@@ -142,6 +159,7 @@
     - restart nomad
 
 - name: Remove custome configuration
+  tags: configuration
   file:
     dest: "{{ nomad_config_dir }}/custom.json"
     state: absent
@@ -152,9 +170,11 @@
     - restart nomad
 
 - name: Host volume
+  tags: configuration
   include: host_volume.yml
 
 - name: SYSV init script
+  tags: configuration
   template:
     src: nomad_sysvinit.j2
     dest: /etc/init.d/nomad
@@ -164,6 +184,7 @@
   when: not ansible_service_mgr == "systemd" and not ansible_os_family == "Debian"
 
 - name: Debian init script
+  tags: configuration
   template:
     src: nomad_debian.init.j2
     dest: /etc/init.d/nomad
@@ -185,7 +206,7 @@
     - ansible_service_mgr == "systemd"
     - not ansible_os_family == "FreeBSD"
     - not ansible_os_family == "Solaris"
-  tags: skip_ansible_lint
+  tags: skip_ansible_lint, configuration
 
 - block:
     - name: systemd script
@@ -208,6 +229,7 @@
   when: ansible_service_mgr == "systemd"
 
 - name: Start Nomad
+  tags: configuration
   service:
     name: nomad
     enabled: true

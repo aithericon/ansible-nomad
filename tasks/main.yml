@@ -209,8 +209,8 @@
   tags: skip_ansible_lint, configuration
 
 - block:
-  tags: configuration, installation
     - name: systemd script
+      tags: configuration, installation
       template:
         src: "{{ nomad_systemd_template }}"
         dest: "{{ nomad_systemd_unit_path }}/nomad.service"
@@ -220,9 +220,11 @@
       register: nomad_systemd_file
     - block:
       - name: reload systemd daemon
+        tags: configuration, installation
         systemd:
           daemon_reload: true
       - name: Enable nomad at startup (systemd)
+        tags: configuration, installation
         systemd:
           name: nomad
           enabled: yes

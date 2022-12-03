@@ -11,8 +11,10 @@
 [Unit]
 Description=nomad agent
 Documentation=https://nomadproject.io/docs/
-After=network-online.target
-Wants=network-online.target
+After=network-online.target consul.service
+Wants=network-online.target consul.service
+ConditionPathExists=/etc/nomad.d/base.hcl
+
 StartLimitBurst=3
 StartLimitIntervalSec=10
 
@@ -27,7 +29,7 @@ KillSignal=SIGINT
 LimitNOFILE=infinity
 LimitNPROC=infinity
 Restart=always
-RestartSec=120
+RestartSec=20
 {% if systemd_version.stdout is version('226', '>=') %}
 TasksMax=infinity
 {% endif %}
